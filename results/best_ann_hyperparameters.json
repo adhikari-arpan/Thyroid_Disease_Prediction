@@ -1,0 +1,8 @@
+{
+    "first_units": 128,
+    "use_batch_normalization": false,
+    "first_dropout": 0.2,
+    "second_units": 48,
+    "second_dropout": 0.1,
+    "learning_rate": 0.001
+}

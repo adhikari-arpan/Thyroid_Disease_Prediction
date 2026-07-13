@@ -1,0 +1,50 @@
+{
+    "model_type": "Artificial Neural Network / MLP",
+    "feature_names": [
+        "age",
+        "sex",
+        "on_thyroxine",
+        "query_on_thyroxine",
+        "on_antithyroid_medication",
+        "sick",
+        "pregnant",
+        "thyroid_surgery",
+        "I131_treatment",
+        "query_hypothyroid",
+        "query_hyperthyroid",
+        "lithium",
+        "goitre",
+        "tumor",
+        "hypopituitary",
+        "psych",
+        "TSH",
+        "T3",
+        "TT4",
+        "T4U",
+        "FTI"
+    ],
+    "number_of_features": 21,
+    "number_of_classes": 3,
+    "original_class_labels": {
+        "1": "hyperthyroid",
+        "2": "hypothyroid",
+        "3": "normal"
+    },
+    "ann_class_labels": {
+        "0": "hyperthyroid",
+        "1": "hypothyroid",
+        "2": "normal"
+    },
+    "training_csv_rows": 5760,
+    "testing_csv_rows": 1440,
+    "validation_fraction": 0.2,
+    "random_state": 42,
+    "best_hyperparameters": {
+        "first_units": 128,
+        "use_batch_normalization": false,
+        "first_dropout": 0.2,
+        "second_units": 48,
+        "second_dropout": 0.1,
+        "learning_rate": 0.001
+    }
+}

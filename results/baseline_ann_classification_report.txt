@@ -1,0 +1,9 @@
+              precision    recall  f1-score   support
+
+hyperthyroid     0.5273    0.8788    0.6591        33
+ hypothyroid     0.1313    0.5946    0.2152        74
+      normal     0.9724    0.7659    0.8569      1333
+
+    accuracy                         0.7597      1440
+   macro avg     0.5437    0.7464    0.5771      1440
+weighted avg     0.9190    0.7597    0.8194      1440
