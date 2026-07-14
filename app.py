@@ -1,6 +1,6 @@
 """
 Thyroid Disease Prediction — Streamlit Demo App
-NCIT ML Group Case Study
+ ML Group Case Study
 
 This app loads YOUR team's actual trained models directly from the project
 structure — nothing here is retrained or faked.
