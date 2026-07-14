@@ -49,6 +49,8 @@ MODELS_DIR = "models"
 # ============================================================
 # LOAD EVERYTHING (cached so it only runs once per session)
 # ============================================================
+
+
 @st.cache_resource
 def load_everything():
     errors = []
@@ -71,10 +73,11 @@ def load_everything():
         class_labels = {int(k): v for k, v in raw_labels.items()}
     except Exception as e:
         errors.append(f"Could not read {labels_path}: {e}")
-        class_labels = {1: "hyperthyroid", 2: "hypothyroid", 3: "normal"}
+        class_labels = {1: "hypothyroid", 2: "hyperthyroid", 3: "normal"}
 
     # --- Random Forest (baseline + tuned) ---
-    rf_baseline_path = os.path.join(MODELS_DIR, "random_forest_baseline.joblib")
+    rf_baseline_path = os.path.join(
+        MODELS_DIR, "random_forest_baseline.joblib")
     rf_tuned_path = os.path.join(MODELS_DIR, "random_forest_tuned.joblib")
     try:
         rf_baseline_model = joblib.load(rf_baseline_path)
@@ -91,12 +94,14 @@ def load_everything():
     ann_baseline, ann_tuned = None, None
     try:
         from tensorflow import keras
-        ann_baseline_path = os.path.join(MODELS_DIR, "baseline_thyroid_ann.keras")
+        ann_baseline_path = os.path.join(
+            MODELS_DIR, "baseline_thyroid_ann.keras")
         ann_tuned_path = os.path.join(MODELS_DIR, "tuned_thyroid_ann.keras")
         ann_baseline = keras.models.load_model(ann_baseline_path)
         ann_tuned = keras.models.load_model(ann_tuned_path)
     except Exception as e:
-        errors.append(f"Could not load ANN models (is tensorflow installed?): {e}")
+        errors.append(
+            f"Could not load ANN models (is tensorflow installed?): {e}")
 
     # --- Metadata (optional, just for display) ---
     metadata = None
@@ -143,7 +148,7 @@ st.divider()
 with st.sidebar:
     st.header("About these models")
     st.write(
-        "Three models are compared side by side, all trained on the same "
+        "Four models are compared side by side, all trained on the same "
         "UCI ANN-Thyroid dataset:"
     )
     st.markdown("- **Random Forest** (baseline)")
@@ -176,7 +181,8 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
     st.markdown("**Demographics**")
-    age = st.slider("Age (normalized, 0=youngest, 1=oldest)", 0.0, 1.0, 0.45, 0.01)
+    age = st.slider("Age (normalized, 0=youngest, 1=oldest)",
+                    0.0, 1.0, 0.45, 0.01)
     sex = st.radio("Sex", ["Female", "Male"], horizontal=True)
 
     st.markdown("**Medication / Treatment History**")
@@ -184,7 +190,8 @@ with col1:
     query_on_thyroxine = st.checkbox("Uncertain if on thyroxine")
     on_antithyroid_meds = st.checkbox("On anti-thyroid medication")
     thyroid_surgery = st.checkbox("History of thyroid surgery")
-    i131_treatment = st.checkbox("History of radioactive iodine (I131) treatment")
+    i131_treatment = st.checkbox(
+        "History of radioactive iodine (I131) treatment")
     lithium = st.checkbox("Currently on lithium")
 
 with col2:
@@ -201,11 +208,15 @@ with col2:
 with col3:
     st.markdown("**Lab Values (normalized, dataset scale)**")
     tsh = st.number_input("TSH", min_value=0.0, max_value=0.6, value=0.005, step=0.001, format="%.4f",
-                           help="Higher = possible underactive thyroid. Lower = possible overactive thyroid.")
-    t3 = st.number_input("T3", min_value=0.0, max_value=0.2, value=0.020, step=0.001, format="%.4f")
-    tt4 = st.number_input("TT4", min_value=0.0, max_value=0.7, value=0.110, step=0.001, format="%.4f")
-    t4u = st.number_input("T4U", min_value=0.0, max_value=0.3, value=0.098, step=0.001, format="%.4f")
-    fti = st.number_input("FTI", min_value=0.0, max_value=0.7, value=0.113, step=0.001, format="%.4f")
+                          help="Higher = possible underactive thyroid. Lower = possible overactive thyroid.")
+    t3 = st.number_input("T3", min_value=0.0, max_value=0.2,
+                         value=0.020, step=0.001, format="%.4f")
+    tt4 = st.number_input("TT4", min_value=0.0, max_value=0.7,
+                          value=0.110, step=0.001, format="%.4f")
+    t4u = st.number_input("T4U", min_value=0.0, max_value=0.3,
+                          value=0.098, step=0.001, format="%.4f")
+    fti = st.number_input("FTI", min_value=0.0, max_value=0.7,
+                          value=0.113, step=0.001, format="%.4f")
 
 st.divider()
 
@@ -219,7 +230,7 @@ if st.button("🔍 Predict Thyroid Status", type="primary", use_container_width=
         "sex": 1 if sex == "Male" else 0,
         "on_thyroxine": int(on_thyroxine),
         "query_on_thyroxine": int(query_on_thyroxine),
-        "on_antithyroid_meds": int(on_antithyroid_meds),
+        "on_antithyroid_medication": int(on_antithyroid_meds),
         "sick": int(sick),
         "pregnant": int(pregnant),
         "thyroid_surgery": int(thyroid_surgery),
@@ -238,9 +249,36 @@ if st.button("🔍 Predict Thyroid Status", type="primary", use_container_width=
         "FTI": fti,
     }
 
-    # Build input in the EXACT column order the models were trained on
-    input_df = pd.DataFrame([raw_input])[feature_order]
-    input_array = input_df.values.astype("float32")
+    # Build one patient row.
+    input_df = pd.DataFrame([raw_input])
+
+    # Validate that the frontend fields exactly match the features in train.csv.
+    missing_features = [
+        feature
+        for feature in feature_order
+        if feature not in input_df.columns
+    ]
+
+    unexpected_features = [
+        feature
+        for feature in input_df.columns
+        if feature not in feature_order
+    ]
+
+    if missing_features or unexpected_features:
+        st.error("Frontend feature names do not match the model training features.")
+
+        if missing_features:
+            st.write("Missing features:", missing_features)
+
+        if unexpected_features:
+            st.write("Unexpected features:", unexpected_features)
+
+        st.stop()
+
+    # Reorder the values exactly as the models saw them during training.
+    input_df = input_df.reindex(columns=feature_order)
+    input_array = input_df.to_numpy(dtype="float32")
 
     st.subheader("Prediction Results — Side by Side")
 
@@ -273,14 +311,14 @@ if st.button("🔍 Predict Thyroid Status", type="primary", use_container_width=
     rf_base_proba = rf_baseline_model.predict_proba(input_df)[0]
     rf_base_classes = rf_baseline_model.classes_
     render_result(rf_base_col, "Random Forest (baseline)", rf_base_pred,
-                   rf_base_proba[list(rf_base_classes).index(rf_base_pred)], rf_base_proba, rf_base_classes)
+                  rf_base_proba[list(rf_base_classes).index(rf_base_pred)], rf_base_proba, rf_base_classes)
 
     # --- Random Forest tuned ---
     rf_tuned_pred = rf_tuned_model.predict(input_df)[0]
     rf_tuned_proba = rf_tuned_model.predict_proba(input_df)[0]
     rf_tuned_classes = rf_tuned_model.classes_
     render_result(rf_tuned_col, "Random Forest (tuned)", rf_tuned_pred,
-                   rf_tuned_proba[list(rf_tuned_classes).index(rf_tuned_pred)], rf_tuned_proba, rf_tuned_classes)
+                  rf_tuned_proba[list(rf_tuned_classes).index(rf_tuned_pred)], rf_tuned_proba, rf_tuned_classes)
 
     # --- ANN baseline (Keras outputs 0-indexed classes -> shift back to 1/2/3) ---
     ann_base_proba = ann_baseline.predict(input_array, verbose=0)[0]
@@ -288,14 +326,14 @@ if st.button("🔍 Predict Thyroid Status", type="primary", use_container_width=
     ann_base_pred = ann_base_pred_idx + 1
     ann_classes_display = [i + 1 for i in range(len(ann_base_proba))]
     render_result(ann_base_col, "ANN (baseline)", ann_base_pred,
-                   ann_base_proba[ann_base_pred_idx], ann_base_proba, ann_classes_display)
+                  ann_base_proba[ann_base_pred_idx], ann_base_proba, ann_classes_display)
 
     # --- ANN tuned ---
     ann_tuned_proba = ann_tuned.predict(input_array, verbose=0)[0]
     ann_tuned_pred_idx = int(np.argmax(ann_tuned_proba))
     ann_tuned_pred = ann_tuned_pred_idx + 1
     render_result(ann_tuned_col, "ANN (tuned)", ann_tuned_pred,
-                   ann_tuned_proba[ann_tuned_pred_idx], ann_tuned_proba, ann_classes_display)
+                  ann_tuned_proba[ann_tuned_pred_idx], ann_tuned_proba, ann_classes_display)
 
     st.divider()
 
@@ -308,7 +346,7 @@ if st.button("🔍 Predict Thyroid Status", type="primary", use_container_width=
     }
     unique_preds = set(preds.values())
     if len(unique_preds) == 1:
-        st.success("✅ All three models agree on this prediction.")
+        st.success("✅ All four models agree on this prediction.")
     else:
         st.warning(
             "⚠️ The models disagree on this patient — a good discussion point for "
@@ -323,4 +361,5 @@ if st.button("🔍 Predict Thyroid Status", type="primary", use_container_width=
     )
 
 st.divider()
-st.caption("Built for the NCIT BE Computer Engineering — Machine Learning Group Case Study")
+st.caption(
+    "Built for the NCIT BE Computer Engineering — Machine Learning Group Case Study")
