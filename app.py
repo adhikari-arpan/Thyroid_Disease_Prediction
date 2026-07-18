@@ -1,32 +1,3 @@
-"""
-Thyroid Disease Prediction — Streamlit Demo App
- ML Group Case Study
-
-This app loads YOUR team's actual trained models directly from the project
-structure — nothing here is retrained or faked.
-
-EXPECTED FOLDER STRUCTURE (place app.py in the project ROOT, next to the
-data/ and models/ folders shown in your file tree):
-
-Thyroid_Disease_Prediction/
-├── app.py                          <-- this file goes here
-├── data/
-│   └── processed/
-│       ├── class_labels.json
-│       ├── train.csv
-│       └── test.csv
-├── models/
-│   ├── random_forest_baseline.joblib
-│   ├── baseline_thyroid_ann.keras
-│   ├── tuned_thyroid_ann.keras
-│   └── thyroid_ann_metadata.json
-
-HOW TO RUN:
-1. pip install streamlit scikit-learn joblib pandas numpy tensorflow
-2. From the project root: streamlit run app.py
-3. Opens automatically at http://localhost:8501
-"""
-
 import streamlit as st
 import pandas as pd
 import numpy as np
