@@ -64,8 +64,6 @@ See [SETUP.md](./SETUP.md) for environment setup and installation instructions.
 python app.py
 ```
 
-*(Update this with actual usage instructions — e.g. if it's a Streamlit/Flask app, note the run command and any required model files from `models/`.)*
-
 ## Limitations
 
 - Original UCI train/test files were combined and re-split, so results aren't directly comparable to studies preserving the official split
